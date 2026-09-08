@@ -4,9 +4,32 @@ import { DecorativeDivider, PageHeader } from "@/components/GardenHeading";
 import { PlannerCard } from "@/components/PlannerCard";
 import { useAcademic } from "@/lib/data/AcademicProvider";
 import { courseById } from "@/lib/data/selectors";
+import { useState } from "react";
 
 export default function NotesPage() {
-  const { data } = useAcademic();
+  const { data, refresh } = useAcademic();
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState("");
+
+  async function syncWithNotion() {
+    setSyncing(true);
+    setSyncMessage("");
+    try {
+      const response = await fetch("/api/notion/sync", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ notes: data.notes }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error ?? "Sync failed");
+      await refresh(result.snapshot);
+      setSyncMessage(`Synced ${result.updated} note${result.updated === 1 ? "" : "s"}.`);
+    } catch (error) {
+      setSyncMessage(error instanceof Error ? error.message : "Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   return (
     <div>
@@ -15,6 +38,12 @@ export default function NotesPage() {
         title="NOTES"
         subtitle="Pinned scraps, course materials, and the links you keep losing."
       />
+      <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "18px 0" }}>
+        <button className="chip sage" type="button" onClick={syncWithNotion} disabled={syncing}>
+          {syncing ? "Syncing…" : "Sync with Notion"}
+        </button>
+        {syncMessage && <span className="muted" role="status">{syncMessage}</span>}
+      </div>
       <DecorativeDivider />
       <div className="notes-grid">
         {data.notes.map((note) => {
