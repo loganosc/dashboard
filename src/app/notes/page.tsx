@@ -3,7 +3,6 @@
 import { DecorativeDivider, PageHeader } from "@/components/GardenHeading";
 import { PlannerCard } from "@/components/PlannerCard";
 import { useAcademic } from "@/lib/data/AcademicProvider";
-import { courseById } from "@/lib/data/selectors";
 import { useState } from "react";
 
 export default function NotesPage() {
@@ -47,12 +46,11 @@ export default function NotesPage() {
       <DecorativeDivider />
       <div className="notes-grid">
         {data.notes.map((note) => {
-          const course = note.courseId ? courseById(data, note.courseId) : undefined;
           return (
             <PlannerCard key={note.id} lined>
               <p className="card-kicker">
                 {note.pinned ? "pinned · " : ""}
-                {course?.code ?? "general"}
+                {note.title}
               </p>
               <h3 style={{ marginTop: 0 }}>{note.title}</h3>
               <p>{note.body}</p>

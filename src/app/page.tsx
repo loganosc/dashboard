@@ -33,7 +33,7 @@ export default function HomePage() {
   return (
     <div>
       <PlannerCard tone="blue" className="mb-4">
-        <p className="hand-kicker">
+        <p className="hand-kicker" suppressHydrationWarning>
           {greeting}, {data.studentName}!
         </p>
         <h2 className="display-title pink-shadow" style={{ fontSize: "2.4rem" }}>
