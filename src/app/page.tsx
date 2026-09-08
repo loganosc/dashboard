@@ -1,69 +1,124 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Link from "next/link";
+import { AssignmentCard, CourseCard } from "@/components/cards";
+import { DecorativeDivider, SectionHeader } from "@/components/GardenHeading";
+import { PlannerCard } from "@/components/PlannerCard";
+import { ProgressWidget } from "@/components/ProgressWidget";
+import { useAcademic } from "@/lib/data/AcademicProvider";
+import {
+  formatLongDate,
+  greetingForHour,
+  isoDate,
+  nextExam,
+  semesterProgress,
+  todayCourses,
+  upcomingAssignments,
+  weekDays,
+} from "@/lib/data/selectors";
+
+export default function HomePage() {
+  const { data, setAssignmentStatus } = useAcademic();
+  const now = new Date();
+  const greeting = greetingForHour(now.getHours());
+  const todayList = todayCourses(data, now);
+  const upcoming = upcomingAssignments(data, now, 4);
+  const exam = nextExam(data, now);
+  const progress = semesterProgress(data, now);
+  const week = weekDays(now).slice(0, 5);
+  const todayDue = data.assignments.filter(
+    (item) => item.dueDate === isoDate(now) && item.status !== "Completed",
+  ).length;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div>
+      <PlannerCard tone="blue" className="mb-4">
+        <p className="hand-kicker">
+          {greeting}, {data.studentName}!
+        </p>
+        <h2 className="display-title pink-shadow" style={{ fontSize: "2.4rem" }}>
+          WELCOME
+        </h2>
+        <p className="date-line">{formatLongDate(now)}</p>
+        <div className="bubble-row">
+          <span className="chip sage">{todayList.length} classes today</span>
+          <span className="chip pink">{todayDue} assignments due</span>
+          <span className="chip blue">
+            {exam ? `next exam ${exam.title}` : "no exams this week"}
+          </span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+      </PlannerCard>
+
+      <DecorativeDivider />
+
+      <div className="layout-home">
+        <div className="stack">
+          <SectionHeader title="THIS WEEK" script="mon–fri" />
+          <div className="week-grid">
+            {week.map((day) => {
+              const iso = isoDate(day);
+              const isToday = iso === isoDate(now);
+              const classes = todayCourses(data, day);
+              const due = data.assignments.filter((item) => item.dueDate === iso);
+              return (
+                <div key={iso} className={`week-cell${isToday ? " is-today" : ""}`}>
+                  <h4>
+                    ꒰ {day.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()} ꒱
+                  </h4>
+                  {classes.map((course) => (
+                    <div key={course.id} className={`tiny-item ${course.color}`}>
+                      {course.code}
+                    </div>
+                  ))}
+                  {due.map((item) => (
+                    <div key={item.id} className="tiny-item pink">
+                      {item.title}
+                    </div>
+                  ))}
+                  {!classes.length && !due.length ? (
+                    <p className="muted">open sky</p>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+
+          <SectionHeader title="UPCOMING" script="due soon" />
+          {upcoming.map((item) => (
+            <AssignmentCard
+              key={item.id}
+              assignment={item}
+              course={data.courses.find((c) => c.id === item.courseId)}
+              onStatus={(status) => setAssignmentStatus(item.id, status)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ))}
+          <Link href="/assignments" className="btn ghost" style={{ width: "fit-content" }}>
+            see the full list
+          </Link>
         </div>
-      </main>
+
+        <div className="stack">
+          <SectionHeader title="MY CLASSES" script="fall garden" />
+          {data.courses.map((course) => (
+            <CourseCard key={course.id} course={course} />
+          ))}
+          <ProgressWidget
+            label="semester progress"
+            value={progress.percent}
+            hint={`${progress.credits} credits`}
+          />
+          <PlannerCard lined>
+            <p className="card-kicker">quick notes</p>
+            {data.notes
+              .filter((note) => note.pinned)
+              .map((note) => (
+                <p key={note.id} className="muted" style={{ marginBottom: 10 }}>
+                  <strong>{note.title}.</strong> {note.body}
+                </p>
+              ))}
+          </PlannerCard>
+        </div>
+      </div>
     </div>
   );
 }

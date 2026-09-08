@@ -20,6 +20,10 @@
 # production
 /build
 
+# design kit (local reference only)
+/design-ref
+/Garden of Words.zip
+
 # misc
 .DS_Store
 *.pem

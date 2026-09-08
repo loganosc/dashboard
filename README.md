@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Garden of Words Dashboard
+
+Garden of Words is a personal academic dashboard for courses, assignments,
+grades, notes, exams, and calendar events.
+
+The visual design and starting template are based on the **Garden of Words
+template from Daphne**. This project adapts that template into a working
+student planner with Canvas calendar syncing, Notion data support, assignment
+status tracking, and local event creation.
+
+## Features
+
+- Course overview and individual course pages
+- Assignment to-do list with status controls and due dates
+- Direct `Open in Canvas` links for Canvas assignments
+- Calendar view with Canvas `.ics` events and recurring events
+- Add personal calendar events that persist in browser storage
+- Notion-backed academic data with mock-data fallback
+- Custom Bubblegum and Winkle typography
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies and start the development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a local `.env.local` file. Never commit this file or share its values.
 
-## Learn More
+```env
+NOTION_TOKEN=your_notion_integration_token
+NOTION_STUDENT_NAME=Your Name
+CALENDAR_FEED_URL=https://your-canvas-instance.example/feeds/calendars/user.ics
+CALENDAR_TIMEZONE=America/New_York
+```
 
-To learn more about Next.js, take a look at the following resources:
+The Canvas calendar feed is read-only. It supplies calendar events and
+assignment due dates. The Notion integration reads databases shared with the
+integration. The expected database names are:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `Courses`
+- `Assignments`
+- `Exams`
+- `Events`
+- `Readings`
+- `Notes`
+- `Grades`
+- `Semesters`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Optional database IDs can be configured in `.env.local`; see `.env.example`.
 
-## Deploy on Vercel
+## Commands
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run dev      # Start the development server
+npm run build    # Create a production build
+npm run start    # Start the production server
+npm run lint     # Run ESLint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Data and Privacy
+
+Notion credentials and Canvas feed URLs are server-side environment values and
+must not be exposed in client-side code or committed to git. Locally created
+calendar events are stored in the browser with `localStorage` and are not
+written back to Canvas or Notion.
