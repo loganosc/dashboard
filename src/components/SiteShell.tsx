@@ -18,7 +18,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <div className="shell">
         <div className="page-frame">
           <div className="page-inner">
-            <p className="crumb">{`{ garden of words } / ${pageName}`}</p>
+            <p className="crumb">{`garden of words ${pageName}`}</p>
             <Navigation pathname={pathname} />
             <div className="hero-banner">
               <div className="hero-copy">
