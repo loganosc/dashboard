@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/PlannerCard";
 import { formatShortDate } from "@/lib/data/selectors";
@@ -29,12 +32,21 @@ export function AssignmentCard({
   course?: Course;
   onStatus?: (status: Assignment["status"]) => void;
 }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <article className="planner-card assignment-card">
       <div>
         <p className="card-kicker">{course?.code ?? "Course"}</p>
-        <h3 style={{ margin: "0 0 6px" }}>{assignment.title}</h3>
-        <p className="muted">{assignment.description}</p>
+        <button
+          type="button"
+          className="assignment-title-button"
+          aria-expanded={isExpanded}
+          onClick={() => setIsExpanded((expanded) => !expanded)}
+        >
+          <h3 style={{ margin: "0 0 6px" }}>{assignment.title}</h3>
+        </button>
+        {isExpanded ? <p className="muted">{assignment.description}</p> : null}
         <div className="meta-row">
           <Badge>{assignment.type}</Badge>
           <Badge tone={assignment.priority}>{assignment.priority}</Badge>
