@@ -68,6 +68,11 @@ export default function ClassDetailPage() {
                   Course site
                 </a>
               ) : null}
+              {course.notionUrl ? (
+                <a className="chip pink" href={course.notionUrl} target="_blank" rel="noopener noreferrer">
+                  Open in Notion
+                </a>
+              ) : null}
             </div>
           </PlannerCard>
 

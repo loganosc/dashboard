@@ -4,7 +4,7 @@ import { Client } from "@notionhq/client";
 import type { AcademicSnapshot, Assignment, Course, Exam, AcademicEvent, Reading, Note, Semester, GradeCategory } from "@/lib/types";
 
 type NotionProperty = Record<string, unknown>;
-type NotionPage = { id: string; properties: Record<string, NotionProperty> };
+type NotionPage = { id: string; url?: string; properties: Record<string, NotionProperty> };
 
 const notionToken = process.env.NOTION_TOKEN ?? process.env.NOTION_API_KEY;
 const notion = new Client({ auth: notionToken });
@@ -69,7 +69,7 @@ async function pages(name: string): Promise<NotionPage[]> {
 }
 
 async function loadCourses(): Promise<Course[]> {
-  return (await pages("Courses")).map(({ id, properties }) => ({
+  return (await pages("Courses")).map(({ id, url, properties }) => ({
     id,
     code: stringValue(properties, ["code", "course code"]),
     name: stringValue(properties, ["name", "course", "title"], "Untitled course"),
@@ -79,6 +79,7 @@ async function loadCourses(): Promise<Course[]> {
     meeting: { days: [], start: "", end: "", location: "" },
     syllabusUrl: stringValue(properties, ["syllabus", "syllabus url"]),
     websiteUrl: stringValue(properties, ["website", "website url"]),
+    notionUrl: url,
     currentGrade: numberValue(properties, ["current grade"], 0),
     targetGrade: numberValue(properties, ["target grade"], 0),
   }));
@@ -182,10 +183,11 @@ export async function loadNotionSnapshot(): Promise<AcademicSnapshot> {
     link: stringValue(properties, ["link", "url"]),
   }));
 
-  const mappedNotes: Note[] = notes.map(({ id, properties }) => ({
+  const mappedNotes: Note[] = notes.map(({ id, url, properties }) => ({
     id,
     courseId: relationId(properties, ["course"]),
     title: stringValue(properties, ["title", "name"], "Untitled note"),
+    notionUrl: url,
     body: stringValue(properties, ["body", "content", "notes"]),
     pinned: value(properties, ["pinned"])?.checkbox === true,
     updatedAt: dateValue(properties, ["updated at", "date"], new Date().toISOString()),
