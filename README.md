@@ -18,6 +18,24 @@ status tracking, and local event creation.
 - Notion-backed academic data with mock-data fallback
 - Custom Bubblegum and Winkle typography
 
+## Visual Language
+
+The interface follows the Garden of Words palette and typography defined in
+`src/app/globals.css`:
+
+- **Display and navigation:** Bubblegum, loaded from `public/fonts/Bubblegum.ttf`
+- **Handwritten accents:** Winkle, loaded from `public/fonts/Winkle-Regular.ttf`
+- **Body text:** Quicksand, loaded through `next/font/google`
+- **Sage:** `#bbd4ad`
+- **Blue:** `#c3d8db`
+- **Pink:** `#edb7bb`
+- **Cream:** `#f4eee9`
+- **Beige:** `#e8d9c7`
+- **Ink:** `#2c2a22`
+
+The README describes the same design tokens used by the app; the running
+interface itself loads the fonts and colors from the CSS theme.
+
 ## Getting Started
 
 Install dependencies and start the development server:
