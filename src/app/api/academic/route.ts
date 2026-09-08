@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { loadCalendarFeedData } from "@/lib/data/calendar-feed";
-import { loadNotionSnapshot } from "@/lib/data/notion-repository";
+import { isNotionConfigured, loadNotionSnapshot } from "@/lib/data/notion-repository";
 
 export async function GET() {
-  if (!process.env.NOTION_TOKEN && !process.env.CALENDAR_FEED_URL) {
+  if (!isNotionConfigured() && !process.env.CALENDAR_FEED_URL) {
     return NextResponse.json({ error: "No academic data source is configured" }, { status: 503 });
   }
 
   try {
-    const snapshot = process.env.NOTION_TOKEN
+    const snapshot = isNotionConfigured()
       ? await loadNotionSnapshot()
       : {
           studentName: process.env.NOTION_STUDENT_NAME ?? "Student",

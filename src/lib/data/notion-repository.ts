@@ -6,8 +6,15 @@ import type { AcademicSnapshot, Assignment, Course, Exam, AcademicEvent, Reading
 type NotionProperty = Record<string, unknown>;
 type NotionPage = { id: string; url?: string; properties: Record<string, NotionProperty> };
 
-const notionToken = process.env.NOTION_TOKEN ?? process.env.NOTION_API_KEY;
-const notion = new Client({ auth: notionToken });
+function getNotionToken() {
+  return (process.env.NOTION_TOKEN ?? process.env.NOTION_API_KEY)?.trim();
+}
+
+function getNotionClient() {
+  const token = getNotionToken();
+  if (!token) throw new Error("Notion token is not configured");
+  return new Client({ auth: token });
+}
 
 function value(properties: Record<string, NotionProperty>, names: string[]): NotionProperty | undefined {
   const key = Object.keys(properties).find((name) => names.includes(name.toLowerCase()));
@@ -49,7 +56,7 @@ function relationId(properties: Record<string, NotionProperty>, names: string[])
 async function databaseId(name: string) {
   const configured = process.env[`NOTION_${name.toUpperCase()}_DATABASE_ID`];
   if (configured) return configured;
-  const response = await notion.search({
+  const response = await getNotionClient().search({
     query: name,
     filter: { property: "object", value: "data_source" },
     page_size: 10,
@@ -64,7 +71,7 @@ async function databaseId(name: string) {
 async function pages(name: string): Promise<NotionPage[]> {
   const id = await databaseId(name);
   if (!id) return [];
-  const response = await notion.dataSources.query({ data_source_id: id, page_size: 100 });
+  const response = await getNotionClient().dataSources.query({ data_source_id: id, page_size: 100 });
   return response.results.filter((item) => "properties" in item) as unknown as NotionPage[];
 }
 
@@ -86,7 +93,7 @@ async function loadCourses(): Promise<Course[]> {
 }
 
 export function isNotionConfigured() {
-  return Boolean(notionToken);
+  return Boolean(getNotionToken());
 }
 
 function richText(value: string) {
@@ -114,7 +121,7 @@ export async function syncNotesToNotion(notes: Note[]) {
     if (titleKey) properties[titleKey] = titleProperty(note.title);
     if (bodyKey) properties[bodyKey] = textProperty(note.body);
     if (Object.keys(properties).length) {
-      await notion.pages.update({ page_id: page.id, properties: properties as never });
+      await getNotionClient().pages.update({ page_id: page.id, properties: properties as never });
     }
   }
 
