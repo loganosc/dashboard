@@ -39,6 +39,7 @@ export interface Course {
   meeting: MeetingTime;
   syllabusUrl?: string;
   websiteUrl?: string;
+  notionUrl?: string;
   currentGrade?: number;
   targetGrade?: number;
   notes?: string;
@@ -99,6 +100,7 @@ export interface Note {
   id: string;
   courseId?: string;
   title: string;
+  notionUrl?: string;
   body: string;
   pinned?: boolean;
   updatedAt: string;

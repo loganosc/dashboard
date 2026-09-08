@@ -27,6 +27,11 @@ export default function NotesPage() {
               </p>
               <h3 style={{ marginTop: 0 }}>{note.title}</h3>
               <p>{note.body}</p>
+              {note.notionUrl ? (
+                <a className="chip pink" href={note.notionUrl} target="_blank" rel="noopener noreferrer">
+                  Open in Notion
+                </a>
+              ) : null}
               {note.links?.map((link) => (
                 <a key={link.url} className="chip sage" href={link.url} target="_blank">
                   {link.label}
