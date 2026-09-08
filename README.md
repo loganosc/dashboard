@@ -31,7 +31,9 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment Variables
 
-Create a local `.env.local` file. Never commit this file or share its values.
+Create a local `.env.local` file. Put your private Canvas calendar import URL
+in this file, not in the public `.env.example` template. Never commit this
+file or share its values.
 
 ```env
 NOTION_TOKEN=your_notion_integration_token
@@ -40,9 +42,11 @@ CALENDAR_FEED_URL=https://your-canvas-instance.example/feeds/calendars/user.ics
 CALENDAR_TIMEZONE=America/New_York
 ```
 
-The Canvas calendar feed is read-only. It supplies calendar events and
-assignment due dates. The Notion integration reads databases shared with the
-integration. The expected database names are:
+The Canvas calendar feed is read-only. It supplies calendar events, course
+entries, and assignment due dates. Canvas assignments appear in the dashboard
+assignment page as `Not Started` to-do items with links back to Canvas. The
+Notion integration reads databases shared with the integration. The expected
+database names are:
 
 - `Courses`
 - `Assignments`
@@ -69,4 +73,5 @@ npm run lint     # Run ESLint
 Notion credentials and Canvas feed URLs are server-side environment values and
 must not be exposed in client-side code or committed to git. Locally created
 calendar events are stored in the browser with `localStorage` and are not
-written back to Canvas or Notion.
+written back to Canvas or Notion. The Canvas feed URL remains private and is
+only read by the server through `CALENDAR_FEED_URL`.
