@@ -550,6 +550,23 @@ textarea {
   align-items: start;
 }
 
+.assignment-title-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.assignment-title-button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
 .assignment-actions {
   display: flex;
   flex-direction: column;
