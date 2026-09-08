@@ -6,7 +6,8 @@ import type { AcademicSnapshot, Assignment, Course, Exam, AcademicEvent, Reading
 type NotionProperty = Record<string, unknown>;
 type NotionPage = { id: string; url?: string; properties: Record<string, NotionProperty> };
 
-const notion = new Client({ auth: process.env.NOTION_TOKEN });
+const notionToken = process.env.NOTION_TOKEN ?? process.env.NOTION_API_KEY;
+const notion = new Client({ auth: notionToken });
 
 function value(properties: Record<string, NotionProperty>, names: string[]): NotionProperty | undefined {
   const key = Object.keys(properties).find((name) => names.includes(name.toLowerCase()));
@@ -82,6 +83,43 @@ async function loadCourses(): Promise<Course[]> {
     currentGrade: numberValue(properties, ["current grade"], 0),
     targetGrade: numberValue(properties, ["target grade"], 0),
   }));
+}
+
+export function isNotionConfigured() {
+  return Boolean(notionToken);
+}
+
+function richText(value: string) {
+  return [{ type: "text", text: { content: value.slice(0, 2000) } }];
+}
+
+function titleProperty(value: string) {
+  return { title: richText(value) };
+}
+
+function textProperty(value: string) {
+  return { rich_text: richText(value) };
+}
+
+export async function syncNotesToNotion(notes: Note[]) {
+  const notionNotes = await pages("Notes");
+  const byId = new Map(notes.map((note) => [note.id, note]));
+
+  for (const page of notionNotes) {
+    const note = byId.get(page.id);
+    if (!note) continue;
+    const properties: Record<string, NotionProperty> = {};
+    const titleKey = Object.keys(page.properties).find((key) => ["title", "name"].includes(key.toLowerCase()));
+    const bodyKey = Object.keys(page.properties).find((key) => ["body", "content", "notes"].includes(key.toLowerCase()));
+    if (titleKey) properties[titleKey] = titleProperty(note.title);
+    if (bodyKey) properties[bodyKey] = textProperty(note.body);
+    if (Object.keys(properties).length) {
+      await notion.pages.update({ page_id: page.id, properties: properties as never });
+    }
+  }
+
+  const snapshot = await loadNotionSnapshot();
+  return { snapshot, updated: notionNotes.filter((page) => byId.has(page.id)).length };
 }
 
 export async function loadNotionSnapshot(): Promise<AcademicSnapshot> {

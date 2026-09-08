@@ -21,6 +21,7 @@ type AcademicContextValue = {
   setScoreOverride: (id: string, score: number) => void;
   addEvent: (event: Omit<AcademicEvent, "id">) => void;
   scoreOverrides: Record<string, number>;
+  refresh: (snapshot?: AcademicSnapshot) => Promise<void>;
 };
 
 const AcademicContext = createContext<AcademicContextValue | null>(null);
@@ -84,9 +85,20 @@ export function AcademicProvider({ children }: { children: ReactNode }) {
     };
   }, [remoteData, localEvents, statuses, readings]);
 
+  const refresh = async (snapshot?: AcademicSnapshot) => {
+    if (snapshot) {
+      setRemoteData(snapshot);
+      return;
+    }
+    const response = await fetch("/api/academic");
+    if (!response.ok) throw new Error("Unable to refresh academic data");
+    setRemoteData(await response.json());
+  };
+
   const value = useMemo<AcademicContextValue>(
     () => ({
       data,
+      refresh,
       scoreOverrides,
       setAssignmentStatus(id, status) {
         setStatuses((prev) => {
